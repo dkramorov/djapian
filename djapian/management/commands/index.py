@@ -139,7 +139,7 @@ def rebuild(verbose, per_page, commit_each, app_models=None):
     global rebuild_started
 
     if verbose:
-      print("rebuild started at %s" % datetime.today().strftime('%H:%M %d/%m/%Y'))
+        print("rebuild started at %s" % datetime.today().strftime('%H:%M %d/%m/%Y'))
 
     def after_index(obj):
         global objects_counter
@@ -327,8 +327,7 @@ class Command(BaseCommand):
             dest = 'timeout',
             type = int,
             default = 1,
-            help = 'Time to sleep between each query' +
-                   ' to the database (default: %default)')
+            help = 'Time to sleep between each query to the database (default: %default)')
         parser.add_argument('--rebuild_index',
             action = 'store_true',
             dest = 'rebuild_index',
@@ -356,7 +355,7 @@ class Command(BaseCommand):
             dest = 'model',
             type = str,
             default = '',
-            help = 'Set model dot separated')
+            help = 'Set model, dot separated')
 
     help = 'This is the Djapian daemon used to update the index based on djapian_change table'
     requires_model_validation = True
@@ -388,13 +387,13 @@ class Command(BaseCommand):
                 raise CommandError("%s. Are you sure your INSTALLED_APPS setting is correct?" % e)
             for app in app_list:
                 app_models = models.get_models(app, include_auto_created=True)
-                if options.get('rebuild_index'): # DEPRICATED
+                if options.get('rebuild_index'): # DEPRECATED
                     rebuild(verbose, per_page, commit_each, app_models)
                 else:
                     update_changes(verbose, timeout,
                                    per_page, commit_each, app_models)
         else:
-            if options.get('rebuild_index'): # DEPRICATED
+            if options.get('rebuild_index'): # DEPRECATED
                 rebuild(verbose, per_page, commit_each)
             else:
                 update_changes(verbose, timeout,

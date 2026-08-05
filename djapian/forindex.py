@@ -17,20 +17,24 @@ from djapian.space import IndexSpace
 from djapian.utils import load_indexes
 from djapian.resultset import ResultSet
 
+
 space = IndexSpace(settings.DJAPIAN_DATABASE_PATH, 'global')
 add_index = space.add_index
 rega_strict_text = re.compile('[^0-9a-zA-Zа-яА-ЯёЁ/-]', re.U+re.I+re.DOTALL)
+HEX_STR = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+
 
 def kill_quotes(item, rega=None, replace: str = ''):
     """Замена в строке на replace символы
        (обычно на "", но можно на пробел
        Своя регулярка, например,
        заменить несколько пробелов на один
-       kill_quotes(item=' Радужный  42', rega=re.compile('rega[\s]+', re.I+re.U+re.DOTALL), replace=' ')
+       kill_quotes(item=' Радужный  42', rega=re.compile('[ ]+', re.I+re.U+re.DOTALL), replace=' ')
     """
     if not rega:
         rega = rega_strict_text
-    return rega.sub(replace, item)
+    return rega.sub(replace, item).strip()
+
 
 def get_indexes():
     """Вытащить все индексы app:model"""
@@ -44,6 +48,7 @@ def get_indexes():
         result[label].append(name)
     return result
 
+
 def get_hunspell_words(search_terms):
     """Hunspell suggest
        вспомогательная функция для проверки словаря
@@ -52,6 +57,7 @@ def get_hunspell_words(search_terms):
        .decode('utf-8') каждый элемент
     """
     return HUNSPELL_VOCABULARY.suggest(search_terms)
+
 
 def get_xapian_words(result):
     """Xapian suggest
@@ -67,6 +73,7 @@ def get_xapian_words(result):
         term = rega.sub('', term)
         result_terms.append(term)
     return result_terms
+
 
 def get_xapian_stopper(stopwords: list = None):
     """hunspell_stopper stop list
@@ -87,6 +94,7 @@ def get_xapian_stopper(stopwords: list = None):
     for word in stopwords:
         _stopper.add(word)
     return _stopper
+
 
 class HunspellStem(xapian.StemImplementation):
     dic = {'залипон': 'залипуха'}
@@ -183,6 +191,7 @@ def whata_terms(RSet, encode=False):
         search_terms.append(term)
     return search_terms
 
+
 def hershin(string, result):
     """1) Заменить в строке запятые на пробелы
        2) Разбить по пробелам строку
@@ -203,6 +212,7 @@ def hershin(string, result):
             if not item in result:
                 result.append(item)
     return result
+
 
 def work_for_djapian(model, pks: list, action: str = 'edit'):
     """Работа за djapian т.к. этот даун не знает,
@@ -228,6 +238,7 @@ def work_for_djapian(model, pks: list, action: str = 'edit'):
             object_id=pk,
             action=action, )
     return 1
+
 
 def serp_hash(words):
     """Хэш текста из слов
@@ -259,7 +270,7 @@ def serp_hash(words):
         new_words += new_word
     return new_words
 
-HEX_STR = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
+
 HUNSPELL_VOCABULARY = hunspell.HunSpell(
     os.path.join(settings.DJAPIAN_VOCA, '%s.dic' % settings.DJAPIAN_STEMMING_LANG),
     os.path.join(settings.DJAPIAN_VOCA, '%s.aff' % settings.DJAPIAN_STEMMING_LANG), )

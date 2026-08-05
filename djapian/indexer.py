@@ -347,7 +347,7 @@ class Indexer(object):
                 commiter.cancel_page()
                 raise
 
-        database.flush()
+        database.commit()
 
     def search(self, query, flags = None, facets: list = None):
         """Поиск по индексу, например:
