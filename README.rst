@@ -25,6 +25,17 @@ export LDFLAGS=$(pkg-config --libs hunspell) && \
 export CPPFLAGS=$(pkg-config --cflags hunspell) && \
 uv pip install hunspell --no-cache
 
+Для Ubuntu с докером:
+лучше собирать биндинги вручную, а не через xapian-bindings-0.1 (т/к недоступен постоянно oligarchy.co.uk)
+RUN cd /app/distr/ && \
+    tar -xf xapian-core-1.4.29.tar.xz && \
+    cd /app/distr/xapian-core-1.4.29 && \
+    ./configure && make install
+
+RUN cd /app/distr && \
+    tar -xf xapian-bindings-1.4.29.tar.xz && \
+    cd /app/distr/xapian-bindings-1.4.29 && \
+    ./configure --with-python3 && make install
 
 Словари hunspell
 Файл .dic (Dictionary):
