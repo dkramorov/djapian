@@ -349,7 +349,7 @@ class Indexer(object):
 
         database.commit()
 
-    def search(self, query, flags = None, facets: list = None):
+    def search(self, query, flags = None, facets: list = None, order_by: list = None):
         """Поиск по индексу, например:
            doc_count = ProductsProperties.indexer.document_count()
            search_result = ProductsProperties.indexer.search(
@@ -361,13 +361,15 @@ class Indexer(object):
            :param query: запрос строкой
            :param flags: флаги поиска, смотреть в ResultSet # https://xapian.org/docs/queryparser.html
            :param facets: фасеты списком по которым надо считать количество вхождений
+           :param order_by: сортировка ['RELEVANCE', False] / [None, False] / ['-price', False]
+                            relevance_first - второй элемент массива, первый - поле для сортировки
         """
         if isinstance(flags, str):
             if flags == 'bool':
                 flags = xapian.QueryParser.FLAG_BOOLEAN
             else:
                 flags = None
-        return ResultSet(self, query, flags=flags, facets=facets)
+        return ResultSet(self, query, flags=flags, facets=facets, order_by=order_by)
 
     def delete(self, obj, database=None):
         """
