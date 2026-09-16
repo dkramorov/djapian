@@ -367,8 +367,12 @@ class Indexer(object):
         if isinstance(flags, str):
             if flags == 'bool':
                 flags = xapian.QueryParser.FLAG_BOOLEAN
+            elif flags == 'partial':
+                flags = xapian.QueryParser.FLAG_PARTIAL
             else:
                 flags = None
+        else:
+            flags = xapian.QueryParser.FLAG_PARTIAL
         return ResultSet(self, query, flags=flags, facets=facets, order_by=order_by)
 
     def delete(self, obj, database=None):

@@ -148,7 +148,7 @@ class NewIndexer(Indexer):
         for field in self.fields + self.tags:
             # Trying to resolve field value or skip it
             # Отладочка:
-            # print(field, field.resolve(obj))
+            #print(field, field.resolve(obj))
             try:
                 value = field.resolve(obj)
                 if value is None:
