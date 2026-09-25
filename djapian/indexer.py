@@ -360,6 +360,13 @@ class Indexer(object):
            )
            :param query: запрос строкой
            :param flags: флаги поиска, смотреть в ResultSet # https://xapian.org/docs/queryparser.html
+                         FLAG_BOOLEAN: Enables support for boolean operators like AND, OR, NOT, and bracketed expressions.
+                         FLAG_PHRASE: Enables support for quoted phrase expressions ("")).
+                         FLAG_LOVEHATE: Enables support for + (mandatory) and - (prohibited) operators.
+                         FLAG_BOOLEAN_ANY_CASE: Enables support for lowercase or mixed-case boolean operators (e.g., and, or).
+                         FLAG_WILDCARD: Enables support for wildcard matching (such as *).
+                         FLAG_PARTIAL: Treats the final word of an interactive search as a wildcard match automatically unless followed by whitespace.
+                         FLAG_NO_PROPER_NOUN_HEURISTIC: Disables the special capitalized proper-noun handling (added in Xapian 2.0)
            :param facets: фасеты списком по которым надо считать количество вхождений
            :param order_by: сортировка ['RELEVANCE', False] / [None, False] / ['-price', False]
                             relevance_first - второй элемент массива, первый - поле для сортировки
@@ -372,7 +379,7 @@ class Indexer(object):
             else:
                 flags = None
         else:
-            flags = xapian.QueryParser.FLAG_PARTIAL
+            flags = xapian.QueryParser.FLAG_PARTIAL | xapian.QueryParser.FLAG_BOOLEAN
         return ResultSet(self, query, flags=flags, facets=facets, order_by=order_by)
 
     def delete(self, obj, database=None):
