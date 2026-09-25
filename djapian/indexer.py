@@ -379,7 +379,10 @@ class Indexer(object):
             else:
                 flags = None
         else:
-            flags = xapian.QueryParser.FLAG_PARTIAL | xapian.QueryParser.FLAG_BOOLEAN
+            flags = xapian.QueryParser.FLAG_PHRASE |\
+                    xapian.QueryParser.FLAG_PARTIAL |\
+                    xapian.QueryParser.FLAG_BOOLEAN |\
+                    xapian.QueryParser.FLAG_WILDCARD
         return ResultSet(self, query, flags=flags, facets=facets, order_by=order_by)
 
     def delete(self, obj, database=None):
