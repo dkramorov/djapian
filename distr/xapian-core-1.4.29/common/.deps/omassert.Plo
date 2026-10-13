@@ -1,0 +1,2 @@
+common/omassert.lo: common/omassert.cc config.h
+config.h:

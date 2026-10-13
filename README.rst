@@ -37,6 +37,14 @@ RUN cd /app/distr && \
     cd /app/distr/xapian-bindings-1.4.29 && \
     ./configure --with-python3 && make install
 
+При ошибках
+checking for python3 sphinx module... no (try installing package python3-sphinx
+configure: error: Python3 bindings build dependencies not found
+Нужно установить sphinx
+brew install sphinx-doc
+apt-get install python3-sphinx
+или pip install -U sphinx (лучше через uv pip install sphinx)
+
 Словари hunspell
 Файл .dic (Dictionary):
   Содержит общее число слов на первой строке.

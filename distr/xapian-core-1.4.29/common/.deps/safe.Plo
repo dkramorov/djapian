@@ -1,0 +1,2 @@
+common/safe.lo: common/safe.cc config.h
+config.h:

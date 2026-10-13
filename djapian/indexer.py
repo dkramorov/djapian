@@ -383,6 +383,8 @@ class Indexer(object):
                     xapian.QueryParser.FLAG_PARTIAL |\
                     xapian.QueryParser.FLAG_BOOLEAN |\
                     xapian.QueryParser.FLAG_WILDCARD
+        if query == 'xapian.Query.MatchAll':
+            query = xapian.Query.MatchAll
         return ResultSet(self, query, flags=flags, facets=facets, order_by=order_by)
 
     def delete(self, obj, database=None):

@@ -71,11 +71,11 @@ def update_changes(verbose, timeout, per_page, commit_each, app_models=None):
 
             for page in paginate(
                             Change.objects.filter(content_type=ct, action__in=('add', 'edit'))\
-                                .select_related('content_type')\
+                                # django.core.exceptions.FieldError: Field Change.content_type cannot be both deferred and traversed using select_related at the same time.
+                                #.select_related('content_type')\
                                 .order_by('object_id'),
                             per_page
                         ): # The objects must be sorted by date
-
                 commiter.begin_page()
 
                 try:
@@ -88,7 +88,6 @@ def update_changes(verbose, timeout, per_page, commit_each, app_models=None):
                             per_page,
                             commit_each
                         )
-
                     for change in page.object_list:
                         change.delete()
 
@@ -370,11 +369,9 @@ class Command(BaseCommand):
         timeout = options['timeout']
         per_page = options['per_page']
         commit_each = options['commit_each']
-
         indexer, model = get_indexer_and_model(indexer=options['indexer'], model=options['model'], verbose=verbose)
         if options.get('rebuild_index'):
             rebuild_index(indexer=indexer, model=model, verbose=verbose)
-
             finished = time.time()
             elapsed = finished - started
             print('[ELAPSED]: %.2f sec (%s min)' % (elapsed, int(elapsed/60)))
@@ -396,6 +393,5 @@ class Command(BaseCommand):
             if options.get('rebuild_index'): # DEPRECATED
                 rebuild(verbose, per_page, commit_each)
             else:
-                update_changes(verbose, timeout,
-                               per_page, commit_each)
+                update_changes(verbose, timeout, per_page, commit_each)
 

@@ -7,6 +7,7 @@ from datetime import datetime
 
 from djapian import utils
 
+
 class ChangeManager(models.Manager):
     def create(self, object, action, **kwargs):
         ct = ContentType.objects.get_for_model(object.__class__)
@@ -73,9 +74,14 @@ class Change(models.Model):
             self.date
         )
 
-    def save(self):
+    def save(self, *args, **kwargs):
+        """Сохранение изменений для индексатора
+           обязательно добавляем аргументы *args, **kwargs,
+           чтобы при сохранении правильно принять доп. параметры, типа force_save=True,
+           иначе будет Change.save() got an unexpected keyword argument 'force_insert'
+        """
         self.date = datetime.now()
         super(Change, self).save()
 
     class Meta:
-        unique_together = [("content_type", "object_id")]
+        unique_together = [('content_type', 'object_id')]
