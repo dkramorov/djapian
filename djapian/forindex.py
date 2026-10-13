@@ -24,7 +24,7 @@ rega_strict_text = re.compile('[^0-9a-zA-Zа-яА-ЯёЁ/-]', re.U+re.I+re.DOTAL
 HEX_STR = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
 
-def kill_quotes(item, rega=None, replace: str = ''):
+def kill_quotes(item, rega=None, replace: str = ' '):
     """Замена в строке на replace символы
        (обычно на "", но можно на пробел
        Своя регулярка, например,
@@ -202,7 +202,7 @@ def hershin(string, result):
         return result
     if isinstance(string, int):
         string = '%s' % string
-    string = kill_quotes(item=string, replace=' ')
+    string = kill_quotes(item=string)
     string = string.split()
     for item in string:
         if item:
