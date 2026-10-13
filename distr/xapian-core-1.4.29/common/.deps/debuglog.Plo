@@ -1,2 +1,0 @@
-common/debuglog.lo: common/debuglog.cc config.h
-config.h:
