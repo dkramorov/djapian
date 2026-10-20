@@ -130,6 +130,46 @@ class Field(object):
             return field_value
 
 
+class ZeroPaddedRangeProcessor(xapian.RangeProcessor):
+    """
+    Процессор диапазонов Xapian для чисел,
+    которые индексируются как строки с ведущими нулями (%012d).
+    """
+    def __init__(self, slot, prefix):
+        super(ZeroPaddedRangeProcessor, self).__init__()
+        self.slot = slot
+        self.prefix = prefix
+        # Префикс должен быть байтовым
+        if isinstance(prefix, str):
+            self.prefix = prefix.encode('utf-8')
+
+    def __call__(self, begin, end):
+        # Проверяем, начинается ли токен с нашего префикса (например, 'bg_advance__range:')
+        if not begin.startswith(self.prefix):
+            return xapian.Query()
+
+        # Очищаем границы диапазона от префикса
+        clean_begin = begin[len(self.prefix):].strip()
+        clean_end = end.strip()
+
+        # Приводим к 12-значному формату с ведущими нулями, как в Field.convert
+        try:
+            if clean_begin:
+                begin_padded = b'%012d' % int(clean_begin)
+            else:
+                begin_padded = b'%012d' % 0 # Если левая граница пустая (напр. "..25")
+            if clean_end:
+                end_padded = b'%012d' % int(clean_end)
+            else:
+                end_padded = b'9' * 12 # Если правая граница пустая (напр. "10..")
+        except ValueError:
+            # Если в диапазоне переданы не числа, отдаем пустой запрос
+            return xapian.Query()
+
+        # Возвращаем правильный Xapian Query для диапазона значений в слоте
+        return xapian.Query(xapian.Query.OP_VALUE_RANGE, self.slot, begin_padded, end_padded)
+
+
 class Indexer(object):
     field_class = Field
     decider = decider.CompositeDecider
@@ -358,6 +398,8 @@ class Indexer(object):
            search_result = ProductsProperties.indexer.search(
               'get_product_id:222085',
            )
+           Меньше или равно (LTE <= X): ..100 или 0..100
+           Больше или равно (GTE >= X): 50.. или 50..999999
            :param query: запрос строкой
            :param flags: флаги поиска, смотреть в ResultSet # https://xapian.org/docs/queryparser.html
                          FLAG_BOOLEAN: Enables support for boolean operators like AND, OR, NOT, and bracketed expressions.
@@ -544,7 +586,10 @@ class Indexer(object):
                     pass
         return language
 
-    def _get_query_parser(self, stemming_lang, stopper=None, range_processor_suffix: str = '__range'):
+    def _get_query_parser(self,
+                          stemming_lang,
+                          stopper=None,
+                          range_processor_suffix: str = '__range'):
         """
         Creates a Xapian QueryParser object and applies
         a stemmer, a stopper and prefixes for tags and aliases
@@ -557,11 +602,13 @@ class Indexer(object):
             query_parser.add_prefix(field_prefix, field.get_tag())
 
             if field_prefix.endswith(range_processor_suffix):
-                range_processor = xapian.NumberRangeProcessor(field.number, '%s:' % field_prefix)
+                #range_processor = xapian.NumberRangeProcessor(field.number, '%s:' % field_prefix)
+                range_processor = ZeroPaddedRangeProcessor(field.number, '%s:' % field_prefix)
                 query_parser.add_rangeprocessor(range_processor)
             if field.prefix in self.aliases:
                 for alias in self.aliases[field.prefix]:
                     query_parser.add_prefix(alias, field.get_tag())
+
         if stemming_lang in (None, 'none'):
             stemming_lang = self._get_stem_language()
 
@@ -618,10 +665,6 @@ class Indexer(object):
         # чтобы получить все документы
         if isinstance(term, xapian.Query) or term == xapian.Query.MatchAll:
             return term, query_parser
-
-        # нужно найти индексы и добавить в них range processors
-        #money = xapian.NumberRangeProcessor(0, 'price')
-        #query_parser.add_rangeprocessor(money) # $300..800
 
         parsed_query = query_parser.parse_query(term, flags)
         return parsed_query, query_parser

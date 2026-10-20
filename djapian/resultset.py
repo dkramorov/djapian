@@ -40,9 +40,10 @@ class ResultSet(object):
         self._facets = facets
 
         if flags is None:
-            flags = xapian.QueryParser.FLAG_PHRASE\
-                        | xapian.QueryParser.FLAG_BOOLEAN\
-                        | xapian.QueryParser.FLAG_LOVEHATE
+            flags = xapian.QueryParser.FLAG_PHRASE |\
+                    xapian.QueryParser.FLAG_PARTIAL |\
+                    xapian.QueryParser.FLAG_BOOLEAN |\
+                    xapian.QueryParser.FLAG_WILDCARD
         self._flags = flags
         self._stemming_lang = stemming_lang
         self._stopper = stopper
@@ -61,7 +62,7 @@ class ResultSet(object):
     def spell_correction(self):
         return self._clone(
             flags=self._flags | xapian.QueryParser.FLAG_SPELLING_CORRECTION\
-                                | xapian.QueryParser.FLAG_WILDCARD
+                              | xapian.QueryParser.FLAG_WILDCARD
         )
 
     def prefetch(self, select_related=False):
