@@ -18,3 +18,10 @@ def load_indexes():
             loading.get_module(app, 'index')
         except loading.NoModuleError:
             pass
+
+
+def call_command_index():
+    """Вызывать индексацию
+    """
+    from django.core import management
+    management.call_command('index')

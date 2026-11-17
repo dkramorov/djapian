@@ -1,6 +1,7 @@
 """
 Here are the post_save and the pre_delete signals
 """
+from django.db import router
 from djapian.models import Change
 
 
@@ -26,8 +27,28 @@ def post_save(sender, instance, created, *args, **kwargs):
     Change.objects.create(object=instance, action=created and 'add' or 'edit')
 
 
-
 def pre_delete(sender, instance, *args, **kwargs):
     """Create the Change object to update the index
     """
     Change.objects.create(object=instance, action='delete')
+
+
+def manual_save(model, ids, action: str = 'edit'):
+    """Ручная вставка в таблицу для индексации
+       :param model: модель
+       :param ids: список идентификаторов
+       :param action: действие (add/edit/delete)
+    """
+    if not model or not ids or action not in ('add', 'edit', 'delete'):
+        return
+    # Узнать базу для чтения модели model
+    read_db = router.db_for_read(model)
+    # Узнать базу для записи модели Change
+    write_db = router.db_for_write(Change)
+
+    changes = []
+    for item in model.objects.using(read_db).filter(pk__in=ids):
+        item._state.db = write_db # Меняем бд на ту, где Change
+        changes.append(Change(object=item, action=action))
+    if changes:
+        Change.objects.bulk_create(changes, ignore_conflicts=True)
